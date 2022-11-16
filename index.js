@@ -56,6 +56,30 @@ res.sendStatus(201);
 
   })
 
+  app.post("/sign-in" ,async (req, res)=> {
+    const {email, password} = req.body;
+try{
+const userExists = await userCollection.findOne({email})
+if(!userExists){
+  res.sendStatus(401);
+}
+
+const passwordOk = bcrypt.compareSync(password, userExists.password)
+
+if(!passwordOk){
+  return res.sendStatus(401);
+}
+
+res.send({message: `Olá ${userExists.name}, seja bem vindo!`})
+} catch (err) {
+  console.log(err)
+  res.sendStatus(500)
+}
+  })
+
+
+
+
   app.listen(5000, () => {
     console.log("Running in port 5000")
   })
