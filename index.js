@@ -29,7 +29,7 @@ try {
 }
 const db = mongoClient.db("myWallet");
 const userCollection = db.collection("users")
-const sessionColletion = db.collection("session")
+const sessionCollection = db.collection("session")
 app.post("/sign-up", async (req,res) => {
   const user = req.body;
   try{
@@ -53,15 +53,15 @@ app.post("/sign-up", async (req,res) => {
     await userCollection.insertOne({...user, password: hashPassword})
     res.sendStatus(201);
   }catch (err) {
-  console.log(err)
-  res.sendStatus(500)
-}
-
+    console.log(err)
+    res.sendStatus(500)
+  }
+  
 })
 
+const token = uuidV4();
 app.post("/sign-in" ,async (req, res)=> {
   const {email, password} = req.body;
-  const token = uuidV4();
   console.log(token)
 try{
 const userExists = await userCollection.findOne({email})
@@ -75,7 +75,7 @@ if(!passwordOk){
   return res.sendStatus(401);
 }
 
-await sessionColletion.insertOne({
+await sessionCollection.insertOne({
   token, 
   userId: userExists._id
 })
@@ -86,7 +86,35 @@ res.send({token})
 }
   })
 
+app.get("/registers", async (req,res) => {
+   
+  const {authorization} = req.headers;
 
+  const token = authorization?.replace("Bearer ", "")
+  console.log(token)
+
+  if(!token) {
+   return res.sendStatus(401);
+  }
+
+  try{
+    const session = await sessionCollection.findOne({token})
+   console.log({session}.userId);
+   const user = await userCollection.findOne({_id: session.userId})
+
+   if(!user){
+    return res.sendStatus(401)
+   }
+delete user.password;
+
+    res.send({register, user})
+
+  }catch (err) {
+    console.log(err)
+    res.status(500).send("Registro não encontrado")
+  }
+}
+)
 
 
   app.listen(5000, () => {
