@@ -2,10 +2,10 @@
   "name": "projeto14-mywallet-back",
   "version": "1.0.0",
   "description": "My Wallet - Projeto 14 - Driven",
-  "main": "index.js",
+  "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon src/index.js"
   },
   "repository": {
     "type": "git",
