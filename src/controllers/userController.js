@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
-import {userSchema, sessionCollection, userCollection} from "../index.js" 
+import {userSchema} from "../index.js";
+import {sessionCollection, userCollection} from "../database/db.js" 
 
 async function UserLogin(req, res) {
   const user = req.body;

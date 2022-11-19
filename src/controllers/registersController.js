@@ -1,4 +1,5 @@
-import {sessionCollection, userCollection, registerCollection, registerSchema, userSchema } from "../index.js"
+import {sessionCollection, userCollection, registerCollection } from "../database/db.js";
+import {registerSchema, userSchema} from "../index.js";
 async function GetRegisters(req, res) {
   const { authorization } = req.headers;
   const token = authorization?.replace("Bearer ", "");
