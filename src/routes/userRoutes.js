@@ -1,5 +1,14 @@
 import { UserLogin, UserRegistration } from "../controllers/userController.js";
 
-app.post("/sign-up", UserLogin);
+import {Router} from "express";
+// import {userSchema}  from "../midlewares/userSchema.js";
 
-app.post("/sign-in", UserRegistration);
+
+const userRouter = Router();
+
+// userRouter.use(userSchema);
+userRouter.post("/sign-up", UserRegistration);
+
+userRouter.post("/sign-in", UserLogin);
+
+export default userRouter;

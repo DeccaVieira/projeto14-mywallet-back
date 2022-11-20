@@ -1,29 +1,34 @@
-import {sessionCollection, userCollection, registerCollection } from "../database/db.js";
-import {registerSchema, userSchema} from "../index.js";
-async function GetRegisters(req, res) {
-  const { authorization } = req.headers;
-  const token = authorization?.replace("Bearer ", "");
+import { ObjectId } from "mongodb";
+import {
+  sessionCollection,
+  userCollection,
+  registerCollection,
+} from "../database/db.js";
+import registerSchema from "../schemas/registerSchemas.js"
 
-  if (!token) {
-    return res.sendStatus(401);
-  }
+
+
+async function GetRegisters(req, res) {
+  const token = req.header;
 
   try {
-    const registers = await registerCollection
-      .find()
-      .sort({ _id: -1 })
-      .toArray();
-    res.send(registers);
-    // const session = await sessionCollection.findOne({ token });
+    // await userCollection.deleteMany({});
+    // await sessionCollection.deleteMany({});
+    // await registerCollection.deleteMany({});
+    const session = await sessionCollection.findOne({ token });
 
-    // const user = await userCollection.findOne({ _id: session?.userId });
-    console.log(user);
+    const user = await userCollection.findOne({ _id: session?.userId });
+
     if (!user) {
       return res.sendStatus(401);
     }
     delete user.password;
 
-    res.send({ registers });
+    //const userRegisters = await registerCollection.findOne({userId:user._id})
+    const userRegisters = await registerCollection.findOne({userId:user._id});
+
+    console.log(userRegisters);
+    res.send(userRegisters.registers);
   } catch (err) {
     console.log(err);
     res.status(500).send("Registro não encontrado");
@@ -31,23 +36,28 @@ async function GetRegisters(req, res) {
 }
 
 async function PostRegister(req, res) {
-  const { authorization } = req.headers;
+  const token = req.header;
+
   const { value, description, type } = req.body;
 
-  const token = authorization?.replace("Bearer", "");
-  if (!token) {
-    return res.sendStatus(401);
-  }
+  const { error } = registerSchema.validate(value, description, type, { abortEarly: false });
+    if (error) {
+      const errors = error.details.map((detail) => detail.message);
+      return res.status(400).send(errors);
+    }
 
   try {
-    const session = sessionCollection.findOne({ token });
-    const user = userCollection.findOne({ _id: session.userId });
+    const session = await sessionCollection.findOne({ token });
 
-    console.log(user);
-    res.sendStatus(201);
+    const user = await userCollection.findOne({ _id: session.userId });
 
-    console.log(session, "session");
-    await registerCollection.insertOne({ value, description, type: "outflow" });
+    registerCollection.updateOne(
+      { userId: user._id },
+      { $push: { registers: { _id:new ObjectId(),value, description, type} } }
+    );
+
+  
+
     res.sendStatus(201);
   } catch (err) {
     res.sendStatus(400);

@@ -3,6 +3,15 @@ import {
   PostRegister,
 } from "../controllers/registersController.js";
 
-app.get("/registers", GetRegisters);
+import { Router } from "express";
+import {validateToken} from "../midlewares/token.middleware.js"
 
-app.post("/registers", PostRegister);
+const router = Router();
+router.use(validateToken);
+
+
+router.get("/registers",GetRegisters);
+
+router.post("/registers",PostRegister);
+
+export default router;
