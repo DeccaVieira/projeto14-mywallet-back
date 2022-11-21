@@ -1,9 +1,11 @@
 import bcrypt from "bcrypt";
-import { registerCollection, sessionCollection, userCollection } from "../database/db.js";
+import {
+  registerCollection,
+  sessionCollection,
+  userCollection,
+} from "../database/db.js";
 import { v4 as uuidV4 } from "uuid";
-const token = uuidV4();
 import userSchema from "../schemas/userSchemas.js";
-
 
 async function UserRegistration(req, res) {
   const user = req.body;
@@ -25,10 +27,13 @@ async function UserRegistration(req, res) {
 
     const userCreated = await userCollection.insertOne({
       ...user,
-      password: hashPassword
+      password: hashPassword,
     });
     console.log(userCreated);
-    await registerCollection.insertOne({userId:userCreated.insertedId,registers:[]})
+    await registerCollection.insertOne({
+      userId: userCreated.insertedId,
+      registers: [],
+    });
     res.sendStatus(201);
   } catch (err) {
     console.log(err);
@@ -40,8 +45,7 @@ async function UserLogin(req, res) {
   const { email, password } = req.body;
 
   try {
-  
-        const userExists = await userCollection.findOne({ email });
+    const userExists = await userCollection.findOne({ email });
     if (!userExists) {
       return res.sendStatus(401);
     }
@@ -49,16 +53,17 @@ async function UserLogin(req, res) {
     const passwordOk = bcrypt.compareSync(password, userExists.password);
 
     if (!passwordOk) {
-      return res.sendStatus(401);
+      return res.status(401).send("Senha Incorreta");
     }
+    const token = uuidV4();
 
     await sessionCollection.insertOne({
       token,
       userId: userExists._id,
     });
-    console.log(token, "sign-in");
-    res.send({ token });
-     } catch (err) {
+    console.log(userExists.name);
+    res.send({ token, name: userExists.name });
+  } catch (err) {
     console.log(err);
     res.sendStatus(500);
   }
