@@ -1,12 +1,11 @@
+import { format } from "date-fns";
 import { ObjectId } from "mongodb";
 import {
   sessionCollection,
   userCollection,
   registerCollection,
 } from "../database/db.js";
-import registerSchema from "../schemas/registerSchemas.js"
-
-
+import registerSchema from "../schemas/registerSchemas.js";
 
 async function GetRegisters(req, res) {
   const token = req.header;
@@ -25,7 +24,9 @@ async function GetRegisters(req, res) {
     delete user.password;
 
     //const userRegisters = await registerCollection.findOne({userId:user._id})
-    const userRegisters = await registerCollection.findOne({userId:user._id});
+    const userRegisters = await registerCollection.findOne({
+      userId: user._id,
+    });
 
     console.log(userRegisters);
     res.send(userRegisters.registers);
@@ -40,23 +41,29 @@ async function PostRegister(req, res) {
 
   const { value, description, type } = req.body;
 
-  const { error } = registerSchema.validate(value, description, type, { abortEarly: false });
-    if (error) {
-      const errors = error.details.map((detail) => detail.message);
-      return res.status(400).send(errors);
-    }
+  const { error } = registerSchema.validate(req.body, {
+    abortEarly: false,
+  });
+  if (error) {
+    const errors = error.details.map((detail) => detail.message);
+    return res.status(400).send(errors);
+  }
 
   try {
     const session = await sessionCollection.findOne({ token });
 
     const user = await userCollection.findOne({ _id: session.userId });
-
+    let today = new Date();
+    let date = today.getDate() + "/" + parseInt(today.getMonth() + 1);
+    console.log(date);
     registerCollection.updateOne(
       { userId: user._id },
-      { $push: { registers: { _id:new ObjectId(),value, description, type} } }
+      {
+        $push: {
+          registers: { _id: new ObjectId(), day: date,value, description, type },
+        },
+      }
     );
-
-  
 
     res.sendStatus(201);
   } catch (err) {

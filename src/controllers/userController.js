@@ -3,9 +3,7 @@ import { registerCollection, sessionCollection, userCollection } from "../databa
 import { v4 as uuidV4 } from "uuid";
 const token = uuidV4();
 import userSchema from "../schemas/userSchemas.js";
-function validateUser(req,res){
 
-}
 
 async function UserRegistration(req, res) {
   const user = req.body;
@@ -43,9 +41,7 @@ async function UserLogin(req, res) {
 
   try {
   
-    const teste = await userCollection.find().toArray();
-    console.log(teste);
-    const userExists = await userCollection.findOne({ email });
+        const userExists = await userCollection.findOne({ email });
     if (!userExists) {
       return res.sendStatus(401);
     }
@@ -60,9 +56,9 @@ async function UserLogin(req, res) {
       token,
       userId: userExists._id,
     });
+    console.log(token, "sign-in");
     res.send({ token });
-    // console.log(token, "sign-in");
-  } catch (err) {
+     } catch (err) {
     console.log(err);
     res.sendStatus(500);
   }

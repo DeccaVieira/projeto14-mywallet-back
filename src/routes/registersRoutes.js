@@ -6,6 +6,7 @@ import {
 import { Router } from "express";
 import {validateToken} from "../midlewares/token.middleware.js"
 
+
 const router = Router();
 router.use(validateToken);
 
